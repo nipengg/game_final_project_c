@@ -3,6 +3,12 @@
 #include <stdlib.h>
 #include <time.h>
 
+typedef struct player{
+    char name[100];
+    int score;
+}player;
+player data[100];
+
 char s[5][100];
 char r[5][100];
 char w[5][100];
@@ -36,7 +42,7 @@ void swap(char *str1, char *str2)
     free(temp);
 }
 
-void randomize(int n)
+void random(int n)
 {
     // Pakai seed beda biar ga sama terus
     srand ( time(NULL) );
@@ -47,7 +53,7 @@ void randomize(int n)
     }
 }
 
-void gen_random(char *t, int len)
+void charRandomize(char *t, int len)
 {
     const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
@@ -68,7 +74,7 @@ void generate()
     for (int i = 0; i < 16; i++)
     {
         char *t[5];
-        gen_random(t, 5);
+        charRandomize(t, 5);
         if (newLine == 4)
         {
             printf("%s\n", t);
@@ -181,7 +187,7 @@ void game()
         }
         printf("Game dimulai..\n");
         gameWord();
-        randomize(16);
+        random(16);
         int answer, step = 16, i = 0, playerScore = 0, botScore = 0, botCheck = 1;
 
         while (step > 0)
@@ -267,9 +273,68 @@ void game()
     system("cls");
 }
 
+void sort()
+{
+    struct player temp;
+    FILE *fp;
+    fp = fopen("score.txt", "r");
+    char name[100];
+    int score, i = 0, count = 0, T;
+    if (fp == NULL)
+    {
+        printf("Error Accessing File\n");
+        exit(1);
+    }
+    while (fscanf(fp, "%s %d\n", name, &score) != EOF)
+    {
+        strcpy(data[count].name, name);
+        data[count].score = score;
+        ++count;
+    }
+    T = count - 1;
+
+    for (int i = 0; i < T; i++)
+    {
+        for (int j = 0; j < T - i; j++)
+        {
+            if (data[j].score < data[j + 1].score)
+            {
+                player temp = data[j];
+                data[j] = data[j + 1];
+                data[j + 1] = temp;
+            }
+        }
+    }
+
+    fp = fopen("score.txt","w");
+	for (i = 0; i <= T; i++)
+    {
+		fprintf(fp, "%s %d\n", data[i].name, data[i].score);
+    }
+
+    fclose(fp);
+}
+
 void leaderboard()
 {
-
+    FILE *fp;
+    fp = fopen("score.txt", "r");
+    char name[100];
+    int score, i = 0;
+    if (fp == NULL)
+    {
+        printf("Error Accessing File\n");
+        exit(1);
+    }
+    printf("No. |  Player Name  |   Score   |\n");
+  	printf("=================================\n");
+    while (fscanf(fp, "%s %d\n", name, &score) != EOF)
+    {
+        printf("%-3d | %-13s | %-9d |\n", ++i , name, score);
+    }
+    printf("=================================\n");
+    fclose(fp);
+    system("pause");
 }
 
 int main()
@@ -302,6 +367,7 @@ int main()
             break;
 
 		case 4:
+            sort();
             leaderboard();
             break;
         }
